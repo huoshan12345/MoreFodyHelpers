@@ -12,9 +12,9 @@
     <Authors>huoshan12345</Authors>
     <Copyright>Copyright © huoshan12345 2018-$([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <PackageTags>IL;MSIL;ILWeaving;Cecil</PackageTags>
-    <PackageProjectUrl>https://github.com/huoshan12345/Mono.Cecil.Utils</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/huoshan12345/FodyHelpers.Utils</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://github.com/huoshan12345/Mono.Cecil.Utils/raw/master/icon.png</PackageIconUrl>
+    <PackageIconUrl>https://github.com/huoshan12345/FodyHelpers.Utils/raw/master/icon.png</PackageIconUrl>
   </PropertyGroup>
 
 </Project>

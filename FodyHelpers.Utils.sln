@@ -23,9 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CFB3FFC9-C65
 		src\Directory.Build.props = src\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil.Utils", "src\Mono.Cecil.Utils\Mono.Cecil.Utils.csproj", "{F79CB55D-EB54-4DEF-BAD2-E359BE7058E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FodyHelpers.Utils", "src\FodyHelpers.Utils\FodyHelpers.Utils.csproj", "{F79CB55D-EB54-4DEF-BAD2-E359BE7058E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil.Utils.Tests", "test\Mono.Cecil.Utils.Tests\Mono.Cecil.Utils.Tests.csproj", "{FEDBDB08-2C83-4466-8C7A-B93FCAAAD917}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FodyHelpers.Tests", "test\FodyHelpers.Utils.Tests\FodyHelpers.Tests.csproj", "{FEDBDB08-2C83-4466-8C7A-B93FCAAAD917}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
