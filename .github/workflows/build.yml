@@ -37,7 +37,7 @@ jobs:
         run: dotnet test ${{ env.SOLUTION }} --no-restore -c Release
 
       - name: NuGet Publish
-        if: ${{ github.ref == 'refs/heads/master' }} && false
+        if: ${{ github.ref == 'refs/heads/master' }}
         shell: pwsh
         run: |
           ./build/pack.ps1
