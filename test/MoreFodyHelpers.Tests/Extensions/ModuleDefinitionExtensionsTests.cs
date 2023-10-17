@@ -10,8 +10,9 @@ public class ModuleDefinitionExtensionsTests
     private static readonly string _dllFileName = typeof(ModuleDefinitionExtensionsTests).Assembly.ManifestModule.Name;
     private static readonly string _dllFileFullName = Path.Combine(_root, _dllFileName);
     private static readonly DirectoryInfo _tempDir = new(Path.Combine(_root, "temp"));
-    private static readonly string _newDllFileFullName = Path.Combine(_tempDir.FullName, _dllFileName.Replace(".dll", ".new.dll"));
-    private static readonly string _newAssemblyName = Path.GetFileNameWithoutExtension(_newDllFileFullName);
+    private static readonly string _newDllFileName = _dllFileName.Replace(".dll", ".new.dll");
+    private static readonly string _newDllFileFullName = Path.Combine(_tempDir.FullName, _newDllFileName);
+    private static readonly string _newAssemblyName = Path.GetFileNameWithoutExtension(_newDllFileName);
     private const string TypeName = "System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute";
 
     [Fact]
@@ -34,7 +35,7 @@ public class ModuleDefinitionExtensionsTests
 
         using (var module = ReadModule(_newDllFileFullName))
         {
-            module.Name = _newAssemblyName;
+            module.Name = _newDllFileName;
             module.Assembly.Name = new AssemblyNameDefinition(_newAssemblyName, module.Assembly.Name.Version);
             module.AddIgnoresAccessCheck();
             module.Write(_newDllFileFullName);
@@ -55,7 +56,8 @@ public class ModuleDefinitionExtensionsTests
 
             var assemblyAttr = assembly.CustomAttributes.FirstOrDefault(m => m.AttributeType == attr);
             Assert.NotNull(assemblyAttr);
-            Assert.Equal(_newAssemblyName, assemblyAttr.ConstructorArguments?.First().Value);
+            Assert.Single(assemblyAttr.ConstructorArguments);
+            Assert.Equal(_newAssemblyName, assemblyAttr.ConstructorArguments[0].Value);
         }
     }
 

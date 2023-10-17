@@ -64,7 +64,7 @@ public static class ModuleDefinitionExtensions
         var stringType = attr.Module.ImportReference<string>();
         var ctor = attr.GetConstructor(stringType);
         var attribute = new CustomAttribute(ctor);
-        var arg = new CustomAttributeArgument(stringType, assemblyName ?? attr.Module.Name);
+        var arg = new CustomAttributeArgument(stringType, assemblyName ?? attr.Module.Assembly.Name.Name);
         attribute.ConstructorArguments.Add(arg);
         attr.Module.Assembly.CustomAttributes.Add(attribute);
         return module;
