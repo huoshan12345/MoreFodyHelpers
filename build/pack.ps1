@@ -17,7 +17,7 @@ if ([string]::IsNullOrEmpty($ver)) {
   throw "the version is empty"
 }
 $srcPath = [io.path]::combine($root, "..", "src")
-$path = [io.path]::combine($srcPath, "FodyHelpers.Utils")
+$path = [io.path]::combine($srcPath, "FodyUtils")
 
 Write-Output "Packing $($path.Basename)"
 & dotnet clean $path --nologo -v q
