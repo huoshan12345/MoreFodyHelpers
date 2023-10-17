@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MoreFodyHelpers.Extensions;
+﻿namespace MoreFodyHelpers.Extensions;
 
 public static class KeyValuePairExtensions
 {
