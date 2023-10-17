@@ -11,8 +11,7 @@ public static class TypeDefinitionExtensions
         var field = type.AddField<T>($"<{name}>k__BackingField", FieldAttributes.Private);
         field.CustomAttributes.Add(new CustomAttribute(module.GetConstructor<CompilerGeneratedAttribute>()));
 
-        var getter = type.AddMethod<T>($"get_{name}", getterAttributes | MethodAttributes.Final | MethodAttributes.HideBySig
-                                                      | MethodAttributes.SpecialName | MethodAttributes.NewSlot | MethodAttributes.Virtual);
+        var getter = type.AddMethod<T>($"get_{name}", getterAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName);
 
         getter.AddAttribute<CompilerGeneratedAttribute>();
         {
@@ -23,6 +22,7 @@ public static class TypeDefinitionExtensions
         }
 
         var setter = type.AddMethod($"set_{name}", setterAttributes | MethodAttributes.HideBySig | MethodAttributes.SpecialName);
+        setter.AddParameter<string>("value");
         setter.AddAttribute<CompilerGeneratedAttribute>();
         {
             var il = setter.Body.GetILProcessor();
@@ -32,7 +32,7 @@ public static class TypeDefinitionExtensions
             il.Emit(OpCodes.Ret);
         }
 
-        var property = new PropertyDefinition(name, PropertyAttributes.None, module.ImportType<T>())
+        var property = new PropertyDefinition(name, PropertyAttributes.None, module.ImportReference<T>())
         {
             GetMethod = getter,
             SetMethod = setter
@@ -51,7 +51,7 @@ public static class TypeDefinitionExtensions
 
     public static FieldDefinition AddField<T>(this TypeDefinition type, string name, FieldAttributes attributes)
     {
-        return type.AddField(name, attributes, type.Module.ImportType<T>());
+        return type.AddField(name, attributes, type.Module.ImportReference<T>());
     }
 
     public static MethodDefinition AddMethod<T>(this TypeDefinition type, string name, MethodAttributes attributes)
@@ -68,7 +68,6 @@ public static class TypeDefinitionExtensions
     {
         var m = new MethodDefinition(name, attributes, returnType);
         type.Methods.Add(m);
-
         return m;
     }
 

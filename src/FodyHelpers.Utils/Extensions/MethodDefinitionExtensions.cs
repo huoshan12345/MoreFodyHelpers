@@ -25,7 +25,7 @@ public static class MethodDefinitionExtensions
         {
             throw new NullReferenceException("This method has yet to be added to the assembly and doesn't have a module. Please provide a module.");
         }
-        return m.AddParameter(m.Module.ImportType(type), name);
+        return m.AddParameter(m.Module.ImportReference(type), name);
     }
 
     public static ParameterDefinition AddParameter(this MethodDefinition m, TypeReference type, string? name = null)

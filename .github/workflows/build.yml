@@ -12,7 +12,7 @@ env:
   DOTNET_NOLOGO: 1
   VERSION: 0.0.1
   NUGET_APIKEY: ${{ secrets.NUGET_APIKEY }}
-  SOLUTION: Mono.Cecil.Utils.sln
+  SOLUTION: FodyHelpers.Utils.sln
 
 jobs:
   build:
