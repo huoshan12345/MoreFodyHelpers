@@ -14,7 +14,6 @@
     <PackageTags>IL;MSIL;ILWeaving;Cecil</PackageTags>
     <PackageProjectUrl>https://github.com/huoshan12345/FodyHelpers.Utils</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://github.com/huoshan12345/FodyHelpers.Utils/raw/master/icon.png</PackageIconUrl>
   </PropertyGroup>
 
 </Project>
