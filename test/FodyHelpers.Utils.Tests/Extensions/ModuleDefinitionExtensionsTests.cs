@@ -1,6 +1,8 @@
 ﻿extern alias FodyHelpers;
 
+using System.Configuration.Assemblies;
 using System.Reflection;
+using System.Security.Policy;
 using FodyHelpers::Fody;
 
 #if NET6_0_OR_GREATER
@@ -15,39 +17,52 @@ public class ModuleDefinitionExtensionsTests
     private static readonly string _dllFileName = typeof(ModuleDefinitionExtensionsTests).Assembly.ManifestModule.Name;
     private static readonly string _dllFileFullName = Path.Combine(_root, _dllFileName);
     private static readonly DirectoryInfo _tempDir = new(Path.Combine(_root, "temp"));
-    private static readonly string _tempDllFileFullName = Path.Combine(_tempDir.FullName, _dllFileName.Replace(".dll", ".new.dll"));
+    private static readonly string _newDllFileFullName = Path.Combine(_tempDir.FullName, _dllFileName.Replace(".dll", ".new.dll"));
+    private static readonly string _newAssemblyName = Path.GetFileNameWithoutExtension(_newDllFileFullName);
     private const string TypeName = "System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute";
 
     [Fact]
     public void GetOrAddIgnoresAccessChecksToAttribute_Test()
     {
+        if (_tempDir.Exists)
+        {
+            _tempDir.Delete(true);
+        }
         _tempDir.Create();
-        File.Copy(_dllFileFullName, _tempDllFileFullName, true);
+        _tempDir.Refresh();
+
+        File.Copy(_dllFileFullName, _newDllFileFullName, true);
 
         {
-            var assembly = ReadAssembly(_tempDllFileFullName);
+            var assembly = ReadAssembly(_newDllFileFullName);
             var attr = assembly.GetType(TypeName);
             Assert.Null(attr);
         }
 
-        var bytes = File.ReadAllBytes(_tempDllFileFullName);
-        using (var resolver = new TestAssemblyResolver())
-        using (var ms = new MemoryStream(bytes))
-        using (var module = ModuleDefinition.ReadModule(ms, new ReaderParameters
+        using (var module = ReadModule(_newDllFileFullName))
         {
-            AssemblyResolver = resolver, // 将增加好目标目录的对象作为参数给AssemblyResolver
-            ReadSymbols = false,
-            ReadingMode = ReadingMode.Immediate,
-        }))
-        {
+            module.Name = _newAssemblyName;
+            module.Assembly.Name = new AssemblyNameDefinition(_newAssemblyName, module.Assembly.Name.Version);
             module.AddIgnoresAccessCheck();
-            module.Write(_tempDllFileFullName);
+            module.Write(_newDllFileFullName);
         }
+
+        using (var module = ReadModule(_newDllFileFullName))
         {
-            var assembly = ReadAssembly(_tempDllFileFullName);
-            var types = assembly.GetTypes().OrderBy(m => m.Name).ToArray();
+            Assert.NotNull(module.GetType(TypeName));
+        }
+
+        {
+            var assembly = ReadAssembly(_newDllFileFullName);
             var attr = assembly.GetType(TypeName);
             Assert.NotNull(attr);
+            var obj = attr.New<Attribute>("test");
+            Assert.NotNull(obj);
+            Assert.Equal("test", obj.GetType().GetProperty("AssemblyName")?.GetValue(obj));
+
+            var assemblyAttr = assembly.CustomAttributes.FirstOrDefault(m => m.AttributeType == attr);
+            Assert.NotNull(assemblyAttr);
+            Assert.Equal(_newAssemblyName, assemblyAttr.ConstructorArguments?.First().Value);
         }
     }
 
@@ -60,22 +75,22 @@ public class ModuleDefinitionExtensionsTests
         context.Unload();
         return assembly;
 #else
-        var file = new FileInfo(path);
-        var info = new AppDomainSetup
-        {
-            ApplicationBase = _root,
-            ApplicationName = Path.GetFileNameWithoutExtension(file.Name),
-            LoaderOptimization = LoaderOptimization.SingleDomain
-        };
-        var domain = AppDomain.CreateDomain(Guid.NewGuid().ToString(), null, info);
-        var assemblyName = new AssemblyName
-        {
-            CodeBase = path
-        };
-        var assembly = domain.Load(assemblyName);
-        AppDomain.Unload(domain);
-        return assembly;
+        var bytes = File.ReadAllBytes(path);
+        return Assembly.Load(bytes);
 #endif
     }
-}
 
+    private static ModuleDefinition ReadModule(string path)
+    {
+        var bytes = File.ReadAllBytes(path);
+        using var resolver = new TestAssemblyResolver();
+        var ms = new MemoryStream(bytes);
+        var module = ModuleDefinition.ReadModule(ms, new ReaderParameters
+        {
+            AssemblyResolver = resolver, // 将增加好目标目录的对象作为参数给AssemblyResolver
+            ReadSymbols = false,
+            ReadingMode = ReadingMode.Immediate,
+        });
+        return module;
+    }
+}
