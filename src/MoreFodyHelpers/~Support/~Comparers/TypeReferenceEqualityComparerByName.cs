@@ -1,6 +1,6 @@
 ﻿using MoreFodyHelpers.Processing;
 
-namespace MoreFodyHelpers.Support;
+namespace MoreFodyHelpers;
 
 using static AssemblyNames;
 

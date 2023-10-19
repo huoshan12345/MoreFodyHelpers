@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace MoreFodyHelpers.Support;
+namespace MoreFodyHelpers;
 
 public sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
 {

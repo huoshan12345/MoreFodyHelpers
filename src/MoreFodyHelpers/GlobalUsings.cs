@@ -11,7 +11,6 @@ global using System.Runtime.InteropServices;
 global using Fody;
 global using MoreFodyHelpers.Building;
 global using MoreFodyHelpers.Extensions;
-global using MoreFodyHelpers.Support;
 global using Mono.Cecil;
 global using Mono.Cecil.Cil;
 global using Mono.Cecil.Rocks;

@@ -30,6 +30,11 @@ public class StandAloneMethodSigBuilder
         _callSite.Parameters.AddRange(paramTypes.Select(t => new ParameterDefinition(t)));
     }
 
+    public StandAloneMethodSigBuilder(CallingConventions callingConvention, MethodReference method)
+        : this(callingConvention, method.ReturnType, method.Parameters.Select(m => m.ParameterType))
+    {
+    }
+
     public CallSite Build()
         => _callSite;
 

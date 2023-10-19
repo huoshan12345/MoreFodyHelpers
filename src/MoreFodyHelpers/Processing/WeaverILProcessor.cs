@@ -5,26 +5,27 @@ public class WeaverILProcessor
     // ReSharper disable once InconsistentNaming
     private const int _emittedBasicBlockId = 0; // Basic block id assigned to emitted instructions
 
-    private readonly ILProcessor _il;
+    public ILProcessor IL { get; }
     private readonly HashSet<Instruction> _referencedInstructions;
     private readonly Dictionary<Instruction, int> _basicBlocks;
 
     public MethodDefinition Method { get; }
 
-    public MethodLocals? Locals { get; private set; }
+    public MethodLocals Locals { get; }
 
     public WeaverILProcessor(MethodDefinition method)
     {
         Method = method;
-        _il = method.Body.GetILProcessor();
+        IL = method.Body.GetILProcessor();
         _referencedInstructions = GetAllReferencedInstructions();
         _basicBlocks = SplitToBasicBlocks(method.Body.Instructions, _referencedInstructions);
+        Locals = new MethodLocals(IL.Body.Method);
     }
 
     public void Remove(Instruction instruction)
     {
         var newRef = instruction.Next ?? instruction.Previous ?? throw new InstructionWeavingException(instruction, "Cannot remove single instruction of method");
-        _il.Remove(instruction);
+        IL.Remove(instruction);
         UpdateReferences(instruction, newRef);
     }
 
@@ -36,31 +37,23 @@ public class WeaverILProcessor
 
     public void Replace(Instruction oldInstruction, Instruction newInstruction, bool mapToBasicBlock = false)
     {
-        _il.Replace(oldInstruction, newInstruction);
+        IL.Replace(oldInstruction, newInstruction);
         UpdateReferences(oldInstruction, newInstruction);
 
         if (mapToBasicBlock)
             _basicBlocks[newInstruction] = GetBasicBlock(oldInstruction);
     }
-
-    public void DeclareLocals(IEnumerable<LocalVarBuilder> locals)
-    {
-        if (Locals != null)
-            throw new WeavingException("Local variables have already been declared for this method");
-
-        Locals = new MethodLocals(_il.Body.Method, locals);
-    }
-
+    
     public HashSet<Instruction> GetAllReferencedInstructions()
     {
         var refs = new HashSet<Instruction>(ReferenceEqualityComparer<Instruction>.Instance);
 
-        foreach (var instruction in _il.Body.Instructions)
+        foreach (var instruction in IL.Body.Instructions)
             refs.UnionWith(instruction.GetReferencedInstructions());
 
-        if (_il.Body.HasExceptionHandlers)
+        if (IL.Body.HasExceptionHandlers)
         {
-            foreach (var handler in _il.Body.ExceptionHandlers)
+            foreach (var handler in IL.Body.ExceptionHandlers)
                 refs.UnionWith(handler.GetReferencedInstructions());
         }
 
@@ -141,7 +134,7 @@ public class WeaverILProcessor
         if (targetBlocks.Count == 0)
             return true;
 
-        var sourceBlockInstructions = _il.Body.Instructions
+        var sourceBlockInstructions = IL.Body.Instructions
                                          .Where(i => GetBasicBlock(i) == sourceBlock)
                                          .ToList();
 
@@ -167,9 +160,9 @@ public class WeaverILProcessor
         if (!_referencedInstructions.Contains(oldInstruction))
             return;
 
-        if (_il.Body.HasExceptionHandlers)
+        if (IL.Body.HasExceptionHandlers)
         {
-            foreach (var handler in _il.Body.ExceptionHandlers)
+            foreach (var handler in IL.Body.ExceptionHandlers)
             {
                 if (handler.TryStart == oldInstruction)
                     handler.TryStart = newInstruction;
@@ -188,7 +181,7 @@ public class WeaverILProcessor
             }
         }
 
-        foreach (var instruction in _il.Body.Instructions)
+        foreach (var instruction in IL.Body.Instructions)
         {
             switch (instruction.Operand)
             {
@@ -243,8 +236,8 @@ public class WeaverILProcessor
     {
         try
         {
-            var instruction = _il.Create(opCode);
-            MethodLocals.MapMacroInstruction(Locals, instruction);
+            var instruction = IL.Create(opCode);
+            Locals.MapMacroInstruction(instruction);
             return instruction;
         }
         catch (ArgumentException)
@@ -257,7 +250,7 @@ public class WeaverILProcessor
     {
         try
         {
-            return _il.Create(opCode, typeRef);
+            return IL.Create(opCode, typeRef);
         }
         catch (ArgumentException)
         {
@@ -269,7 +262,7 @@ public class WeaverILProcessor
     {
         try
         {
-            return _il.Create(opCode, methodRef);
+            return IL.Create(opCode, methodRef);
         }
         catch (ArgumentException)
         {
@@ -281,7 +274,7 @@ public class WeaverILProcessor
     {
         try
         {
-            return _il.Create(opCode, fieldRef);
+            return IL.Create(opCode, fieldRef);
         }
         catch (ArgumentException)
         {
@@ -293,7 +286,7 @@ public class WeaverILProcessor
     {
         try
         {
-            var result = _il.Create(opCode, instruction);
+            var result = IL.Create(opCode, instruction);
             _referencedInstructions.Add(instruction);
             return result;
         }
@@ -307,7 +300,7 @@ public class WeaverILProcessor
     {
         try
         {
-            var result = _il.Create(opCode, instructions);
+            var result = IL.Create(opCode, instructions);
             _referencedInstructions.UnionWith(instructions.Where(i => i != null));
             return result;
         }
@@ -321,7 +314,7 @@ public class WeaverILProcessor
     {
         try
         {
-            return _il.Create(opCode, variableDef);
+            return IL.Create(opCode, variableDef);
         }
         catch (ArgumentException)
         {
@@ -333,7 +326,7 @@ public class WeaverILProcessor
     {
         try
         {
-            return _il.Create(opCode, callSite);
+            return IL.Create(opCode, callSite);
         }
         catch (ArgumentException)
         {
@@ -385,32 +378,32 @@ public class WeaverILProcessor
             {
                 case int value:
                 {
-                    if (MethodLocals.MapIndexInstruction(Locals, ref opCode, value, out var localVar))
+                    if (Locals.MapIndexInstruction(ref opCode, value, out var localVar))
                         return Create(opCode, localVar);
 
-                    return _il.Create(opCode, value);
+                    return IL.Create(opCode, value);
                 }
 
                 case byte value:
                 {
-                    if (MethodLocals.MapIndexInstruction(Locals, ref opCode, value, out var localVar))
+                    if (Locals.MapIndexInstruction(ref opCode, value, out var localVar))
                         return Create(opCode, localVar);
 
-                    return _il.Create(opCode, value);
+                    return IL.Create(opCode, value);
                 }
 
                 case sbyte value:
-                    return _il.Create(opCode, value);
+                    return IL.Create(opCode, value);
                 case long value:
-                    return _il.Create(opCode, value);
+                    return IL.Create(opCode, value);
                 case double value:
-                    return _il.Create(opCode, value);
+                    return IL.Create(opCode, value);
                 case short value:
-                    return _il.Create(opCode, value);
+                    return IL.Create(opCode, value);
                 case float value:
-                    return _il.Create(opCode, value);
+                    return IL.Create(opCode, value);
                 case string value:
-                    return _il.Create(opCode, value);
+                    return IL.Create(opCode, value);
 
                 default:
                     throw new WeavingException($"Unexpected operand for instruction {opCode}: {operand}");

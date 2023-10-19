@@ -1,10 +1,10 @@
-﻿namespace MoreFodyHelpers.Support;
+﻿namespace MoreFodyHelpers;
 
-public class Logger : ILogger
+public class WeaverLogger : IWeaverLogger
 {
     private readonly BaseModuleWeaver _moduleWeaver;
 
-    public Logger(BaseModuleWeaver moduleWeaver)
+    public WeaverLogger(BaseModuleWeaver moduleWeaver)
         => _moduleWeaver = moduleWeaver;
 
     public void Debug(string message)

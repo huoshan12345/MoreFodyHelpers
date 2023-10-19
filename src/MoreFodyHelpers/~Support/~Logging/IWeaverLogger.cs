@@ -1,6 +1,6 @@
-﻿namespace MoreFodyHelpers.Support;
+﻿namespace MoreFodyHelpers;
 
-public interface ILogger
+public interface IWeaverLogger
 {
     void Debug(string message);
     void Info(string message);

@@ -3,10 +3,10 @@
 public class LabelMapper
 {
     private readonly WeaverILProcessor _il;
-    private readonly ILogger _log;
+    private readonly IWeaverLogger _log;
     private readonly Dictionary<string, LabelInfo> _labels = new();
 
-    public LabelMapper(WeaverILProcessor il, ILogger log)
+    public LabelMapper(WeaverILProcessor il, IWeaverLogger log)
     {
         _il = il;
         _log = log;

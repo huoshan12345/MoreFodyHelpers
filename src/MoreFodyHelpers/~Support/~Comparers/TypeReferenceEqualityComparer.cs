@@ -1,4 +1,4 @@
-﻿namespace MoreFodyHelpers.Support;
+﻿namespace MoreFodyHelpers;
 
 public class TypeReferenceEqualityComparer : IEqualityComparer<TypeReference>
 {

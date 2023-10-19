@@ -1,11 +1,11 @@
 namespace MoreFodyHelpers.Processing;
 
-public class MethodWeaverLogger : ILogger
+public class MethodWeaverLogger : IWeaverLogger
 {
-    private readonly ILogger _log;
+    private readonly IWeaverLogger _log;
     private readonly MethodDefinition _method;
 
-    public MethodWeaverLogger(ILogger log, MethodDefinition method)
+    public MethodWeaverLogger(IWeaverLogger log, MethodDefinition method)
     {
         _log = log;
         _method = method;

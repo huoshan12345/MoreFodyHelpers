@@ -97,4 +97,16 @@ public static class TypeDefinitionExtensions
         type.Methods.Add(ctor);
         return ctor;
     }
+    
+    public static MethodDefinition GetInterfaceDefaultMethod(this TypeDefinition typeDef, MethodReference methodRef)
+    {
+        var elementMethod = methodRef.GetElementMethod();
+        var methods = typeDef.Methods.Where(m => m.Overrides.Any(x => x.IsEqualTo(elementMethod))).ToList();
+        return methods.Count switch
+        {
+            0 => throw new MissingMethodException(methodRef.Name),
+            > 1 => throw new System.Reflection.AmbiguousMatchException($"Found more than one method in type {typeDef.Name} by name " + methodRef.Name),
+            _ => methods[0]
+        };
+    }
 }

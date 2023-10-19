@@ -1,6 +1,6 @@
 ﻿namespace MoreFodyHelpers.Extensions;
 
-public static class CecilExtensions
+public static partial class CecilExtensions
 {
     public static TypeDefinition ResolveRequiredType(this TypeReference typeRef)
     {

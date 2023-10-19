@@ -1,4 +1,4 @@
-﻿namespace MoreFodyHelpers.Support;
+﻿namespace MoreFodyHelpers;
 
 public sealed class InstructionWeavingException : WeavingException
 {

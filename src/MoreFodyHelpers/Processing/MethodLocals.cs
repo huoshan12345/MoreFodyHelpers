@@ -4,32 +4,39 @@ public class MethodLocals
 {
     private readonly Dictionary<string, VariableDefinition> _localsByName = new();
     private readonly List<VariableDefinition> _localsByIndex = new();
+    public MethodDefinition Method { get; }
 
-    public MethodLocals(MethodDefinition method, IEnumerable<LocalVarBuilder> locals)
+    public MethodLocals(MethodDefinition method, IEnumerable<LocalVarBuilder>? locals = null)
     {
-        foreach (var local in locals)
+        Method = method ?? throw new ArgumentNullException(nameof(method));
+
+        foreach (var local in locals.EmptyIfNull())
         {
-            var localVar = local.Build();
-
-            if (local.Name != null)
-            {
-                if (_localsByName.ContainsKey(local.Name))
-                    throw new WeavingException($"Local {local.Name} is already defined");
-
-                _localsByName.Add(local.Name, localVar);
-            }
-
-            _localsByIndex.Add(localVar);
-            method.Body.Variables.Add(localVar);
-
-            method.DebugInformation.Scope?.Variables.Add(new VariableDebugInformation(localVar, local.Name ?? $"InlineIL_{_localsByIndex.Count - 1}"));
+            AddLocalVar(local);
         }
+    }
+
+    public VariableDefinition AddLocalVar(LocalVarBuilder local)
+    {
+        var localVar = local.Build();
+        Method.Body.Variables.Add(localVar);
+        var name = local.Name ?? $"_LocalVar_{_localsByIndex.Count - 1}";
+
+        Method.DebugInformation.Scope?.Variables.Add(new VariableDebugInformation(localVar, name));
+
+        if (_localsByName.ContainsKey(name))
+            throw new WeavingException($"Local {local.Name} is already defined");
+
+        _localsByName.Add(name, localVar);
+        _localsByIndex.Add(localVar);
+
+        return localVar;
     }
 
     public VariableDefinition? TryGetByName(string name)
         => _localsByName.GetValueOrDefault(name);
 
-    public static void MapMacroInstruction(MethodLocals? locals, Instruction instruction)
+    public void MapMacroInstruction(Instruction instruction)
     {
         switch (instruction.OpCode.Code)
         {
@@ -61,13 +68,13 @@ public class MethodLocals
 
         void MapIndex(OpCode opCode, int index)
         {
-            var local = GetLocalByIndex(locals, index);
+            var local = GetLocalByIndex(index);
             instruction.OpCode = opCode;
             instruction.Operand = local;
         }
     }
 
-    public static bool MapIndexInstruction(MethodLocals? locals, ref OpCode opCode, int index, [MaybeNullWhen(false)] out VariableDefinition result)
+    public bool MapIndexInstruction(ref OpCode opCode, int index, [MaybeNullWhen(false)] out VariableDefinition result)
     {
         switch (opCode.Code)
         {
@@ -78,7 +85,7 @@ public class MethodLocals
             case Code.Stloc:
             case Code.Stloc_S:
             {
-                result = GetLocalByIndex(locals, index);
+                result = GetLocalByIndex(index);
                 return true;
             }
 
@@ -88,14 +95,11 @@ public class MethodLocals
         }
     }
 
-    private static VariableDefinition GetLocalByIndex(MethodLocals? locals, int index)
+    private VariableDefinition GetLocalByIndex(int index)
     {
-        if (locals == null)
-            throw new WeavingException("No locals are defined");
-
-        if (index < 0 || index >= locals._localsByIndex.Count)
+        if (index < 0 || index >= _localsByIndex.Count)
             throw new WeavingException($"Local index {index} is out of range");
 
-        return locals._localsByIndex[index];
+        return _localsByIndex[index];
     }
 }
