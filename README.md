@@ -4,7 +4,7 @@
 [![NuGet package](https://img.shields.io/nuget/v/MoreFodyHelpers.svg?logo=NuGet)](https://www.nuget.org/packages/MoreFodyHelpers)
 [![.net](https://img.shields.io/badge/.net%20standard-2.0-ff69b4.svg?)](https://www.microsoft.com/net/download)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/huoshan12345/MoreFodyHelpers/blob/master/LICENSE)  
-![Icon](https://github.com/huoshan12345/MoreFodyHelpers/raw/master/icon.png)
+![Icon](https://raw.githubusercontent.com/huoshan12345/MoreFodyHelpers/master/icon.png)
 
 ---
  - [Installation](#installation)
