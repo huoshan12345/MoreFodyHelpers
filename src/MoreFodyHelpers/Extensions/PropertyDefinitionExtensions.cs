@@ -2,19 +2,19 @@
 
 public static class PropertyDefinitionExtensions
 {
-    public static MethodReference BuildSetter(this PropertyDefinition property)
+    public static MethodReference BuildSetter(this PropertyDefinition property, ModuleWeavingContext context)
     {
         if (property.SetMethod == null)
             throw new WeavingException($"Property '{property.Name}' in type {property.DeclaringType.FullName} has no setter");
 
-        return new MethodRefBuilder(property.Module, property.DeclaringType, property.SetMethod).Build();
+        return new MethodRefBuilder(context, property.DeclaringType, property.SetMethod).Build();
     }
 
-    public static MethodReference BuildGetter(this PropertyDefinition property)
+    public static MethodReference BuildGetter(this PropertyDefinition property, ModuleWeavingContext context)
     {
         if (property.GetMethod == null)
             throw new WeavingException($"Property '{property.Name}' in type {property.DeclaringType.FullName} has no getter");
 
-        return new MethodRefBuilder(property.Module, property.DeclaringType, property.GetMethod).Build();
+        return new MethodRefBuilder(context, property.DeclaringType, property.GetMethod).Build();
     }
 }

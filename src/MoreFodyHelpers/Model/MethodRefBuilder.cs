@@ -1,36 +1,34 @@
-﻿using System.Text;
-
-namespace MoreFodyHelpers.Building;
+﻿namespace MoreFodyHelpers.Model;
 
 public class MethodRefBuilder
 {
-    private readonly ModuleDefinition _module;
+    private readonly ModuleWeavingContext _context;
     private MethodReference _method;
 
-    public MethodRefBuilder(ModuleDefinition module, TypeReference typeRef, MethodReference method)
+    public MethodRefBuilder(ModuleWeavingContext context, TypeReference typeRef, MethodReference method)
     {
-        _module = module;
+        _context = context;
 
-        method = method.TryMapToScope(typeRef.Scope, module);
-        _method = _module.ImportReference(_module.ImportReference(method).MakeGeneric(typeRef));
+        method = method.TryMapToScope(typeRef.Scope, context.Module);
+        _method = _context.Module.ImportReference(_context.Module.ImportReference(method).MakeGeneric(typeRef));
     }
 
-    public MethodRefBuilder(ModuleDefinition module, MethodReference method)
+    public MethodRefBuilder(ModuleWeavingContext context, MethodReference method)
     {
-        _module = module;
+        _context = context;
         _method = method;
     }
 
-    public static MethodRefBuilder MethodByName(ModuleDefinition module, TypeReference typeRef, string methodName)
-        => new(module, typeRef, FindMethod(typeRef, methodName, null, null, null));
+    public static MethodRefBuilder MethodByName(ModuleWeavingContext context, TypeReference typeRef, string methodName)
+        => new(context, typeRef, FindMethod(context, typeRef, methodName, null, null, null));
 
-    public static MethodRefBuilder MethodByNameAndSignature(ModuleDefinition module, TypeReference typeRef, string methodName, int? genericArity, TypeRefBuilder? returnType, IReadOnlyList<TypeRefBuilder>? paramTypes)
-        => new(module, typeRef, FindMethod(typeRef, methodName, genericArity, returnType, paramTypes));
+    public static MethodRefBuilder MethodByNameAndSignature(ModuleWeavingContext context, TypeReference typeRef, string methodName, int? genericArity, TypeReference? returnType, IReadOnlyList<TypeRefBuilder> paramTypes)
+        => MethodByNameAndSignature(context, typeRef, methodName, genericArity, returnType?.ToTypeRefBuilder(context), paramTypes);
 
-    public static MethodRefBuilder MethodByNameAndSignature(ModuleDefinition module, TypeReference typeRef, string methodName, int? genericArity, TypeReference? returnType, IEnumerable<TypeReference>? paramTypes)
-        => new(module, typeRef, FindMethod(typeRef, methodName, genericArity, returnType?.ToTypeRefBuilder(), paramTypes?.Select(m => m.ToTypeRefBuilder()).ToArray()));
+    public static MethodRefBuilder MethodByNameAndSignature(ModuleWeavingContext context, TypeReference typeRef, string methodName, int? genericArity, TypeRefBuilder? returnType, IReadOnlyList<TypeRefBuilder> paramTypes)
+        => new(context, typeRef, FindMethod(context, typeRef, methodName, genericArity, returnType, paramTypes ?? throw new ArgumentNullException(nameof(paramTypes))));
 
-    public static MethodRefBuilder MethodFromDelegateReference(ModuleDefinition module, MethodReference methodRef)
+    public static MethodRefBuilder MethodFromDelegateReference(ModuleWeavingContext context, MethodReference methodRef)
     {
         // You can't reason about compiler-generated methods for several reasons:
         // - What appears to be a static method may be changed to an instance method by the compiler,
@@ -43,12 +41,12 @@ public class MethodRefBuilder
         if (methodRef.Name.StartsWith("<", StringComparison.Ordinal))
             throw new WeavingException("A compiler-generated method is referenced by the delegate");
 
-        return new MethodRefBuilder(module, methodRef);
+        return new MethodRefBuilder(context, methodRef);
     }
 
-    private static MethodReference FindMethod(TypeReference typeRef, string methodName, int? genericArity, TypeRefBuilder? returnType, IReadOnlyList<TypeRefBuilder>? paramTypes)
+    private static MethodDefinition FindMethod(ModuleWeavingContext context, TypeReference typeRef, string methodName, int? genericArity, TypeRefBuilder? returnType, IReadOnlyList<TypeRefBuilder>? paramTypes)
     {
-        var typeDef = typeRef.ResolveRequiredType();
+        var typeDef = typeRef.ResolveRequiredType(context);
 
         var methods = typeDef.Methods.Where(m => m.Name == methodName);
 
@@ -67,8 +65,8 @@ public class MethodRefBuilder
 
         return methods.ToList() switch
         {
-            [var method] => method,
-            [] => throw new WeavingException($"Method {GetDisplaySignature(methodName, genericArity, returnType, paramTypes)} not found in type {typeDef.FullName}"),
+        [var method] => method,
+        [] => throw new WeavingException($"Method {GetDisplaySignature(methodName, genericArity, returnType, paramTypes)} not found in type {typeDef.FullName}"),
             _ => throw new WeavingException($"Ambiguous method {GetDisplaySignature(methodName, genericArity, returnType, paramTypes)} in type {typeDef.FullName}")
         };
     }
@@ -94,7 +92,7 @@ public class MethodRefBuilder
     private static string GetDisplaySignature(string methodName, int? genericArity, TypeRefBuilder? returnType, IReadOnlyList<TypeRefBuilder>? paramTypes)
     {
         if (genericArity is null && returnType is null && paramTypes is null)
-            return "'" + methodName + "'";
+            return $"'{methodName}'";
 
         var sb = new StringBuilder();
 
@@ -146,94 +144,94 @@ public class MethodRefBuilder
         return sb.ToString();
     }
 
-    public static MethodRefBuilder PropertyGet(ModuleDefinition module, TypeReference typeRef, string propertyName)
+    public static MethodRefBuilder PropertyGet(ModuleWeavingContext context, TypeReference typeRef, string propertyName)
     {
-        var property = FindProperty(typeRef, propertyName);
+        var property = FindProperty(context, typeRef, propertyName);
 
         if (property.GetMethod == null)
             throw new WeavingException($"Property '{propertyName}' in type {typeRef.FullName} has no getter");
 
-        return new MethodRefBuilder(module, typeRef, property.GetMethod);
+        return new MethodRefBuilder(context, typeRef, property.GetMethod);
     }
 
-    public static MethodRefBuilder PropertySet(ModuleDefinition module, TypeReference typeRef, string propertyName)
+    public static MethodRefBuilder PropertySet(ModuleWeavingContext context, TypeReference typeRef, string propertyName)
     {
-        var property = FindProperty(typeRef, propertyName);
+        var property = FindProperty(context, typeRef, propertyName);
 
         if (property.SetMethod == null)
             throw new WeavingException($"Property '{propertyName}' in type {typeRef.FullName} has no setter");
 
-        return new MethodRefBuilder(module, typeRef, property.SetMethod);
+        return new MethodRefBuilder(context, typeRef, property.SetMethod);
     }
 
-    private static PropertyDefinition FindProperty(TypeReference typeRef, string propertyName)
+    private static PropertyDefinition FindProperty(ModuleWeavingContext context, TypeReference typeRef, string propertyName)
     {
-        var typeDef = typeRef.ResolveRequiredType();
+        var typeDef = typeRef.ResolveRequiredType(context);
 
         var properties = typeDef.Properties.Where(p => p.Name == propertyName).ToList();
 
         return properties switch
         {
-            [var property] => property,
-            [] => throw new WeavingException($"Property '{propertyName}' not found in type {typeDef.FullName}"),
+        [var property] => property,
+        [] => throw new WeavingException($"Property '{propertyName}' not found in type {typeDef.FullName}"),
             _ => throw new WeavingException($"Ambiguous property '{propertyName}' in type {typeDef.FullName}")
         };
     }
 
-    public static MethodRefBuilder EventAdd(ModuleDefinition module, TypeReference typeRef, string eventName)
+    public static MethodRefBuilder EventAdd(ModuleWeavingContext context, TypeReference typeRef, string eventName)
     {
-        var property = FindEvent(typeRef, eventName);
+        var property = FindEvent(context, typeRef, eventName);
 
         if (property.AddMethod == null)
             throw new WeavingException($"Event '{eventName}' in type {typeRef.FullName} has no add method");
 
-        return new MethodRefBuilder(module, typeRef, property.AddMethod);
+        return new MethodRefBuilder(context, typeRef, property.AddMethod);
     }
 
-    public static MethodRefBuilder EventRemove(ModuleDefinition module, TypeReference typeRef, string eventName)
+    public static MethodRefBuilder EventRemove(ModuleWeavingContext context, TypeReference typeRef, string eventName)
     {
-        var property = FindEvent(typeRef, eventName);
+        var property = FindEvent(context, typeRef, eventName);
 
         if (property.RemoveMethod == null)
             throw new WeavingException($"Event '{eventName}' in type {typeRef.FullName} has no remove method");
 
-        return new MethodRefBuilder(module, typeRef, property.RemoveMethod);
+        return new MethodRefBuilder(context, typeRef, property.RemoveMethod);
     }
 
-    public static MethodRefBuilder EventRaise(ModuleDefinition module, TypeReference typeRef, string eventName)
+    public static MethodRefBuilder EventRaise(ModuleWeavingContext context, TypeReference typeRef, string eventName)
     {
-        var property = FindEvent(typeRef, eventName);
+        var property = FindEvent(context, typeRef, eventName);
 
         if (property.InvokeMethod == null)
             throw new WeavingException($"Event '{eventName}' in type {typeRef.FullName} has no raise method");
 
-        return new MethodRefBuilder(module, typeRef, property.InvokeMethod);
+        return new MethodRefBuilder(context, typeRef, property.InvokeMethod);
     }
 
-    private static EventDefinition FindEvent(TypeReference typeRef, string eventName)
+    private static EventDefinition FindEvent(ModuleWeavingContext context, TypeReference typeRef, string eventName)
     {
-        var typeDef = typeRef.ResolveRequiredType();
+        var typeDef = typeRef.ResolveRequiredType(context);
 
         var events = typeDef.Events.Where(e => e.Name == eventName).ToList();
 
         return events switch
         {
-            [var evt] => evt,
-            [] => throw new WeavingException($"Event '{eventName}' not found in type {typeDef.FullName}"),
+        [var evt] => evt,
+        [] => throw new WeavingException($"Event '{eventName}' not found in type {typeDef.FullName}"),
             _ => throw new WeavingException($"Ambiguous event '{eventName}' in type {typeDef.FullName}")
         };
     }
 
-    public static MethodRefBuilder Constructor(ModuleDefinition module, TypeReference typeRef, IReadOnlyList<TypeRefBuilder> paramTypes)
+    public static MethodRefBuilder Constructor(ModuleWeavingContext context, TypeReference typeRef, IReadOnlyList<TypeRefBuilder> paramTypes)
     {
-        var typeDef = typeRef.ResolveRequiredType();
+        var typeDef = typeRef.ResolveRequiredType(context);
 
         var constructors = typeDef.GetConstructors()
                                   .Where(i => !i.IsStatic && i.Name == ".ctor" && SignatureMatches(i, paramTypes))
                                   .ToList();
 
         if (constructors.Count == 1)
-            return new MethodRefBuilder(module, typeRef, constructors.Single());
+            return new MethodRefBuilder(context, typeRef, constructors.Single());
 
         if (paramTypes.Count == 0)
             throw new WeavingException($"Type {typeDef.FullName} has no default constructor");
@@ -241,23 +239,25 @@ public class MethodRefBuilder
         throw new WeavingException($"Type {typeDef.FullName} has no constructor with signature ({string.Join(", ", paramTypes.Select(p => p.GetDisplayName()))})");
     }
 
-    public static MethodRefBuilder TypeInitializer(ModuleDefinition module, TypeReference typeRef)
+    public static MethodRefBuilder TypeInitializer(ModuleWeavingContext context, TypeReference typeRef)
     {
-        var typeDef = typeRef.ResolveRequiredType();
+        var typeDef = typeRef.ResolveRequiredType(context);
 
         var initializers = typeDef.GetConstructors()
                                   .Where(i => i.IsStatic && i.Name == ".cctor" && i.Parameters.Count == 0)
                                   .ToList();
 
-        if (initializers.Count == 1)
-            return new MethodRefBuilder(module, typeRef, initializers.Single());
-
-        throw new WeavingException($"Type {typeDef.FullName} has no type initializer");
+        return initializers switch
+        {
+        [var initializer] => new MethodRefBuilder(context, typeRef, initializer),
+        [] => throw new WeavingException($"Type {typeDef.FullName} has no type initializer"),
+            _ => throw new WeavingException($"Type {typeDef.FullName} has multiple type initializers")
+        };
     }
 
-    public static MethodRefBuilder Operator(ModuleDefinition module, TypeReference typeRef, UnaryOperator opType)
+    public static MethodRefBuilder Operator(ModuleWeavingContext context, TypeReference typeRef, UnaryOperator opType)
     {
-        var typeDef = typeRef.ResolveRequiredType();
+        var typeDef = typeRef.ResolveRequiredType(context);
         var memberName = $"op_{opType}";
 
         var operators = typeDef.Methods
@@ -266,15 +266,15 @@ public class MethodRefBuilder
 
         return operators switch
         {
-            [var op] => new MethodRefBuilder(module, typeRef, op),
-            [] => throw new WeavingException($"Unary operator {memberName} not found in type {typeDef.FullName}"),
+        [var op] => new MethodRefBuilder(context, typeRef, op),
+        [] => throw new WeavingException($"Unary operator {memberName} not found in type {typeDef.FullName}"),
             _ => throw new WeavingException($"Ambiguous operator {memberName} in type {typeDef.FullName}")
         };
     }
 
-    public static MethodRefBuilder Operator(ModuleDefinition module, TypeReference typeRef, BinaryOperator opType, TypeRefBuilder leftOperandType, TypeRefBuilder rightOperandType)
+    public static MethodRefBuilder Operator(ModuleWeavingContext context, TypeReference typeRef, BinaryOperator opType, TypeRefBuilder leftOperandType, TypeRefBuilder rightOperandType)
     {
-        var typeDef = typeRef.ResolveRequiredType();
+        var typeDef = typeRef.ResolveRequiredType(context);
         var memberName = $"op_{opType}";
         var signature = new[] { leftOperandType, rightOperandType };
 
@@ -284,15 +284,15 @@ public class MethodRefBuilder
 
         return operators switch
         {
-            [var op] => new MethodRefBuilder(module, typeRef, op),
-            [] => throw new WeavingException($"Binary operator {memberName}({leftOperandType.GetDisplayName()}, {rightOperandType.GetDisplayName()}) not found in type {typeDef.FullName}"),
+        [var op] => new MethodRefBuilder(context, typeRef, op),
+        [] => throw new WeavingException($"Binary operator {memberName}({leftOperandType.GetDisplayName()}, {rightOperandType.GetDisplayName()}) not found in type {typeDef.FullName}"),
             _ => throw new WeavingException($"Ambiguous operator {memberName} in type {typeDef.FullName}")
         };
     }
 
-    public static MethodRefBuilder Operator(ModuleDefinition module, TypeReference typeRef, ConversionOperator opType, ConversionDirection direction, TypeRefBuilder otherType)
+    public static MethodRefBuilder Operator(ModuleWeavingContext context, TypeReference typeRef, ConversionOperator opType, ConversionDirection direction, TypeRefBuilder otherType)
     {
-        var typeDef = typeRef.ResolveRequiredType();
+        var typeDef = typeRef.ResolveRequiredType(context);
         var memberName = $"op_{opType}";
 
         var methods = typeDef.Methods.Where(m => m.IsStatic && m.IsSpecialName && m.Name == memberName && m.Parameters.Count == 1);
@@ -306,13 +306,13 @@ public class MethodRefBuilder
 
         return operators switch
         {
-            [var op] => new MethodRefBuilder(module, typeRef, op),
-            [] => direction switch
-            {
-                ConversionDirection.From => throw new WeavingException($"Conversion operator {memberName} from {otherType.GetDisplayName()} not found in type {typeDef.FullName}"),
-                ConversionDirection.To => throw new WeavingException($"Conversion operator {memberName} to {otherType.GetDisplayName()} not found in type {typeDef.FullName}"),
-                _ => throw new ArgumentOutOfRangeException(nameof(direction))
-            },
+        [var op] => new MethodRefBuilder(context, typeRef, op),
+        [] => direction switch
+        {
+            ConversionDirection.From => throw new WeavingException($"Conversion operator {memberName} from {otherType.GetDisplayName()} not found in type {typeDef.FullName}"),
+            ConversionDirection.To => throw new WeavingException($"Conversion operator {memberName} to {otherType.GetDisplayName()} not found in type {typeDef.FullName}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(direction))
+        },
             _ => throw new WeavingException($"Ambiguous operator {memberName} in type {typeDef.FullName}")
         };
     }
@@ -334,7 +334,7 @@ public class MethodRefBuilder
         var genericInstance = new GenericInstanceMethod(_method);
         genericInstance.GenericArguments.AddRange(genericArgs);
 
-        _method = _module.ImportReference(genericInstance);
+        _method = _context.Module.ImportReference(genericInstance);
     }
 
     public void SetOptionalParameters(TypeReference[] optionalParamTypes)
@@ -360,7 +360,7 @@ public class MethodRefBuilder
             methodRef.Parameters.Add(new ParameterDefinition(paramType));
         }
 
-        _method = _module.ImportReference(methodRef);
+        _method = _context.Module.ImportReference(methodRef);
     }
 
     public override string ToString()

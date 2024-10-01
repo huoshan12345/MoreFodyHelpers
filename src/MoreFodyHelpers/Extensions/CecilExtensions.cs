@@ -2,13 +2,14 @@
 
 public static partial class CecilExtensions
 {
-    public static TypeDefinition ResolveRequiredType(this TypeReference typeRef)
+    public static TypeDefinition ResolveRequiredType(this TypeReference typeRef, ModuleWeavingContext context)
     {
         TypeDefinition typeDef;
 
         try
         {
-            typeDef = typeRef.Resolve();
+            typeDef = context.InjectedAssemblyResolver.ResolveRegisteredType(typeRef)
+                      ?? typeRef.Resolve();
         }
         catch (Exception ex)
         {
@@ -163,8 +164,8 @@ public static partial class CecilExtensions
             var assemblyFullName = typeRef.Scope switch
             {
                 AssemblyNameReference assemblyName => assemblyName.FullName,
-                ModuleDefinition moduleDef => moduleDef.Assembly.FullName,
-                _ => null
+                ModuleDefinition moduleDef         => moduleDef.Assembly.FullName,
+                _                                  => null
             };
 
             return assemblyFullName != ((AssemblyNameReference)scope).FullName;
@@ -261,7 +262,7 @@ public static partial class CecilExtensions
         var argCount = GetArgCount(instruction.OpCode, method);
 
         if (argCount == 0)
-            return Array.Empty<Instruction>();
+            return [];
 
         var result = new Instruction[argCount];
         var currentInstruction = instruction.Previous;
@@ -425,12 +426,12 @@ public static partial class CecilExtensions
     {
         return callingConvention switch
         {
-            CallingConvention.Cdecl => MethodCallingConvention.C,
-            CallingConvention.StdCall => MethodCallingConvention.StdCall,
-            CallingConvention.Winapi => MethodCallingConvention.StdCall,
+            CallingConvention.Cdecl    => MethodCallingConvention.C,
+            CallingConvention.StdCall  => MethodCallingConvention.StdCall,
+            CallingConvention.Winapi   => MethodCallingConvention.StdCall,
             CallingConvention.FastCall => MethodCallingConvention.FastCall,
             CallingConvention.ThisCall => MethodCallingConvention.ThisCall,
-            _ => throw new WeavingException("Invalid calling convention")
+            _                          => throw new WeavingException("Invalid calling convention")
         };
     }
 
@@ -438,9 +439,9 @@ public static partial class CecilExtensions
     {
         return instruction.Operand switch
         {
-            Instruction operand => new[] { operand },
+            Instruction operand   => [operand],
             Instruction[] operand => operand,
-            _ => Array.Empty<Instruction>()
+            _                     => []
         };
     }
 
@@ -464,7 +465,9 @@ public static partial class CecilExtensions
 
     public static IMetadataScope? GetCoreLibrary(this ModuleDefinition module)
     {
+#pragma warning disable 618
         return module.TypeSystem.CoreLibrary;
+#pragma warning restore 618
     }
 
     public static bool IsDebugBuild(this ModuleDefinition module)
@@ -495,16 +498,4 @@ public static partial class CecilExtensions
     public static bool IsCompilerGenerated(this ICustomAttributeProvider? definition)
         => definition?.HasCustomAttributes is true
            && definition.CustomAttributes.Any(i => i.AttributeType.FullName == "System.Runtime.CompilerServices.CompilerGeneratedAttribute");
-
-    public static SequencePoint? GetInputSequencePoint(this Instruction? instruction, MethodDefinition method)
-    {
-        if (instruction == null)
-            return null;
-
-        var sequencePoints = method.DebugInformation.HasSequencePoints
-            ? method.DebugInformation.SequencePoints
-            : Enumerable.Empty<SequencePoint>();
-
-        return sequencePoints.LastOrDefault(sp => sp.Offset <= instruction.Offset);
-    }
 }

@@ -1,4 +1,6 @@
-﻿namespace MoreFodyHelpers.Extensions;
+﻿using MoreFodyHelpers.Support;
+
+namespace MoreFodyHelpers.Extensions;
 
 public static class TypeReferenceExtensions
 {
@@ -21,9 +23,8 @@ public static class TypeReferenceExtensions
     {
         return TypeReferenceEqualityComparer.Instance.Equals(a, b);
     }
-
-    public static TypeRefBuilder ToTypeRefBuilder(this TypeReference type)
+    public static TypeRefBuilder ToTypeRefBuilder(this TypeReference type, ModuleWeavingContext context)
     {
-        return new TypeRefBuilder(type.Module, type);
+        return TypeRefBuilder.FromTypeReference(context, type);
     }
 }

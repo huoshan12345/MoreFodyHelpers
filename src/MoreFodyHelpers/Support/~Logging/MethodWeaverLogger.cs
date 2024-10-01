@@ -1,4 +1,4 @@
-namespace MoreFodyHelpers;
+namespace MoreFodyHelpers.Support;
 
 public class MethodWeaverLogger : IWeaverLogger
 {

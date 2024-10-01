@@ -1,4 +1,6 @@
-﻿namespace MoreFodyHelpers.Processing;
+﻿using MoreFodyHelpers.Support;
+
+namespace MoreFodyHelpers.Processing;
 
 public class LabelMapper
 {

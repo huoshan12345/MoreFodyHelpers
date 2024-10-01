@@ -1,4 +1,4 @@
-﻿namespace MoreFodyHelpers.Building;
+﻿namespace MoreFodyHelpers.Model;
 
 public class LocalVarBuilder
 {

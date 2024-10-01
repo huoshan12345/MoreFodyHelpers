@@ -1,4 +1,6 @@
-﻿namespace MoreFodyHelpers.Extensions;
+﻿using MoreFodyHelpers.Support;
+
+namespace MoreFodyHelpers.Extensions;
 
 public static class MethodReferenceExtensions
 {
