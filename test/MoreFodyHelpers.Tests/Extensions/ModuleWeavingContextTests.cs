@@ -7,7 +7,7 @@ public class ModuleWeavingContextTests
     [Fact]
     public void Import_RuntimeMethodHandle_Test()
     {
-        var path = typeof(ModuleWeavingContextTests).Assembly.Location;
+        var path = typeof(ModuleWeavingContext).Assembly.Location;
         using var module = ModuleDefinition.ReadModule(path);
         using var context = new ModuleWeavingContext(module, Path.GetDirectoryName(path));
         var intPtr = module.ImportReference(typeof(IntPtr));
