@@ -16,10 +16,10 @@ public static class IEnumerableExtensions
 
         return -1;
     }
+#if NETSTANDARD2_0
+    public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items) => [.. items];
+#endif
 
-    public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items)
-        => new(items); 
-        
     public static string JoinWith<T>(this IEnumerable<T> enumerable, string? separator)
     {
         return string.Join(separator, enumerable);

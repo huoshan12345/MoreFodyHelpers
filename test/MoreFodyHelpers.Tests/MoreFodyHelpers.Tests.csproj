@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net462;net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -24,14 +24,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\MoreFodyHelpers\MoreFodyHelpers.csproj" />
   </ItemGroup>
-
-  <!--To fix the error of "ambiguous reference" for type "NotNullAttribute"-->
-  <Target Name="SetAliases" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
-    <ItemGroup>
-      <ReferencePath Condition="'%(FileName)' == 'FodyHelpers'">
-        <Aliases>FodyHelpers</Aliases>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
 
-namespace MoreFodyHelpers.Model;
+namespace MoreFodyHelpers.Building;
 
 public class TypeRefBuilder
 {
@@ -37,10 +37,10 @@ public class TypeRefBuilder
     {
         return typeRef switch
         {
-            GenericParameter    => throw new WeavingException("Generic parameters cannot be used in this context, expecting a type which can be defined in an assembly."),
+            GenericParameter => throw new WeavingException("Generic parameters cannot be used in this context, expecting a type which can be defined in an assembly."),
             FunctionPointerType => throw new WeavingException("Function pointer types cannot be used in this context, expecting a type which can be defined in an assembly."),
-            TypeSpecification   => throw new WeavingException($"The provided type does not represent an element type: '{typeRef.FullName}', did you mean '{typeRef.GetElementType().FullName}'?"),
-            _                   => FromInjectedAssembly(context, assemblyPath, typeRef.FullName)
+            TypeSpecification => throw new WeavingException($"The provided type does not represent an element type: '{typeRef.FullName}', did you mean '{typeRef.GetElementType().FullName}'?"),
+            _ => FromInjectedAssembly(context, assemblyPath, typeRef.FullName)
         };
     }
 
@@ -226,9 +226,9 @@ public class TypeRefBuilder
 
             genericParameterProvider = genericParameterProvider switch
             {
-                TypeReference type     => Context.Module.ImportReference(type),
+                TypeReference type => Context.Module.ImportReference(type),
                 MethodReference method => Context.Module.ImportReference(method),
-                _                      => throw new ArgumentException($"Unexpected generic parameter provider type: {genericParameterProvider.GetType().Name}")
+                _ => throw new ArgumentException($"Unexpected generic parameter provider type: {genericParameterProvider.GetType().Name}")
             };
 
             return Context.Module.ImportReference(genericParameterProvider.GenericParameters[_index]);
@@ -238,9 +238,9 @@ public class TypeRefBuilder
         {
             return _type switch
             {
-                GenericParameterType.Type   => "!" + _index,
+                GenericParameterType.Type => "!" + _index,
                 GenericParameterType.Method => "!!" + _index,
-                _                           => throw new ArgumentOutOfRangeException()
+                _ => throw new ArgumentOutOfRangeException()
             };
         }
     }

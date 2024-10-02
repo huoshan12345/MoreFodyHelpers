@@ -11,7 +11,7 @@ public static class TypeReferenceExtensions
     /// <returns></returns>
     public static string SimpleName(this TypeReference type)
     {
-        if (type.IsGenericInstance == false) 
+        if (type.IsGenericInstance == false)
             return type.Name;
 
         var name = type.Name;
@@ -26,5 +26,19 @@ public static class TypeReferenceExtensions
     public static TypeRefBuilder ToTypeRefBuilder(this TypeReference type, ModuleWeavingContext context)
     {
         return TypeRefBuilder.FromTypeReference(context, type);
+    }
+
+    public static IEnumerable<TypeReference> BaseTypes(this TypeReference type)
+    {
+        var p = type;
+        while (true)
+        {
+            var b = p.Resolve().BaseType;
+            if (b == null)
+                yield break;
+
+            yield return b;
+            p = b;
+        }
     }
 }

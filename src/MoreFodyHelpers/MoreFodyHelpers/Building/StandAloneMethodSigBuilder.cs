@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace MoreFodyHelpers.Model;
+namespace MoreFodyHelpers.Building;
 
 public class StandAloneMethodSigBuilder
 {

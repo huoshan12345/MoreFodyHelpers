@@ -1,4 +1,4 @@
-﻿namespace MoreFodyHelpers.Model;
+﻿namespace MoreFodyHelpers.Building;
 
 public class FieldRefBuilder
 {
@@ -11,9 +11,9 @@ public class FieldRefBuilder
 
         _field = fields switch
         {
-            [var field] => context.Module.ImportReference(field.Clone()),
-            []          => throw new WeavingException($"Field '{fieldName}' not found in type {typeDef.FullName}"),
-            _           => throw new WeavingException($"Ambiguous field '{fieldName}' in type {typeDef.FullName}")
+        [var field] => context.Module.ImportReference(field.Clone()),
+        [] => throw new WeavingException($"Field '{fieldName}' not found in type {typeDef.FullName}"),
+            _ => throw new WeavingException($"Ambiguous field '{fieldName}' in type {typeDef.FullName}")
         };
 
         _field.DeclaringType = typeRef;

@@ -1,6 +1,4 @@
-﻿using MoreFodyHelpers.Model;
-
-namespace MoreFodyHelpers.Tests.Extensions;
+﻿namespace MoreFodyHelpers.Tests.Extensions;
 
 public class ModuleWeavingContextTests
 {
@@ -9,7 +7,7 @@ public class ModuleWeavingContextTests
     {
         var path = typeof(ModuleWeavingContext).Assembly.Location;
         using var module = ModuleDefinition.ReadModule(path);
-        using var context = new ModuleWeavingContext(module, Path.GetDirectoryName(path));
+        using var context = new ModuleWeavingContext(module, "", Path.GetDirectoryName(path));
         var intPtr = module.ImportReference(typeof(IntPtr));
         var runtimeMethodHandle = module.ImportReference(typeof(RuntimeMethodHandle));
         var method = MethodRefBuilder.MethodByNameAndSignature(context, runtimeMethodHandle, nameof(RuntimeMethodHandle.GetFunctionPointer), 0, intPtr, []).Build();

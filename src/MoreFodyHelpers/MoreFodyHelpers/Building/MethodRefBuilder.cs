@@ -1,4 +1,4 @@
-﻿namespace MoreFodyHelpers.Model;
+﻿namespace MoreFodyHelpers.Building;
 
 public class MethodRefBuilder
 {
