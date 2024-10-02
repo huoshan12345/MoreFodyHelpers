@@ -6,12 +6,12 @@ public class ModuleWeavingContext : IDisposable
 
     public bool IsDebugBuild { get; }
     public string? ProjectDirectory { get; }
-    public string WeaverAssemblyName { get; }
+    public string? WeaverAssemblyName { get; }
 
     internal Dictionary<TypeReference, bool> LibUsageTypeCache { get; } = new();
     internal InjectedAssemblyResolver InjectedAssemblyResolver { get; }
 
-    public ModuleWeavingContext(ModuleDefinition module, string weaverAssemblyName, string? projectDirectory)
+    public ModuleWeavingContext(ModuleDefinition module, string? weaverAssemblyName, string? projectDirectory)
     {
         Module = module;
 

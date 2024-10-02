@@ -4,7 +4,7 @@ using static AssemblyNames;
 
 public class TypeReferenceEqualityComparerByName : IEqualityComparer<TypeReference>
 {
-    private static readonly string[] RuntimeNames = { MsCoreLib, Runtime, CoreLib, Netstandard };
+    private static readonly string[] RuntimeNames = [MsCorLib, SystemRuntime, SystemPrivateCoreLib, Netstandard];
     
     public static IEqualityComparer<TypeReference> Instance { get; } = new TypeReferenceEqualityComparerByName(false);
     public static IEqualityComparer<TypeReference> IgnoreRuntimeInstance { get; } = new TypeReferenceEqualityComparerByName(true);
@@ -44,7 +44,7 @@ public class TypeReferenceEqualityComparerByName : IEqualityComparer<TypeReferen
         var name = scope.Name;
 
         return RuntimeNames.Contains(name) && _ignoreRuntime
-            ? Runtime
+            ? SystemRuntime
             : name;
     }
 }

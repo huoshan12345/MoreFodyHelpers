@@ -12,16 +12,16 @@ public class WeaverILProcessor
     private readonly Dictionary<Instruction, int> _basicBlocks;
 
     public MethodDefinition Method { get; }
-
     public MethodLocals Locals { get; }
 
     public WeaverILProcessor(MethodDefinition method)
     {
-        Method = method;
-        IL = method.Body.GetILProcessor();
+        Method = Check.NotNull(method);
+        Locals = new MethodLocals(Method);
+        IL = Check.NotNull(method.Body).GetILProcessor();
+
         _referencedInstructions = GetAllReferencedInstructions();
         _basicBlocks = SplitToBasicBlocks(method.Body.Instructions, _referencedInstructions);
-        Locals = new MethodLocals(IL.Body.Method);
     }
 
     public void Remove(Instruction instruction)
@@ -45,7 +45,7 @@ public class WeaverILProcessor
         if (mapToBasicBlock)
             _basicBlocks[newInstruction] = GetBasicBlock(oldInstruction);
     }
-    
+
     public HashSet<Instruction> GetAllReferencedInstructions()
     {
         var refs = new HashSet<Instruction>(ReferenceEqualityComparer<Instruction>.Instance);
