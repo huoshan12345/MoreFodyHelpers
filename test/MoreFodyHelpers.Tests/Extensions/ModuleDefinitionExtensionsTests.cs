@@ -1,6 +1,5 @@
-﻿extern alias FodyHelpers;
-using System.Reflection;
-using FodyHelpers::Fody;
+﻿using System.Reflection;
+using Fody;
 
 namespace MoreFodyHelpers.Tests.Extensions;
 

@@ -16,7 +16,7 @@
 - Include the [`MoreFodyHelpers`](https://www.nuget.org/packages/MoreFodyHelpers) NuGet package on its `<PackageReference />` items.
 
   ```XML
-  <PackageReference Include="MoreFodyHelpers" Version="..." />
+  <PackageReference Include="MoreFodyHelpers" GeneratePathProperty="true" Version="..." />
   ```
 
 ## Usage
