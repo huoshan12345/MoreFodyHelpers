@@ -1,6 +1,6 @@
 # MoreFodyHelpers
 
-[![Build](https://github.com/huoshan12345/MoreFodyHelpers/workflows/Build/badge.svg)](https://github.com/huoshan12345/MoreFodyHelpers/actions?query=workflow%3ABuild)
+[![Build](https://github.com/huoshan12345/MoreFodyHelpers/actions/workflows/build.yml/badge.svg)](https://github.com/huoshan12345/MoreFodyHelpers/actions/workflows/build.yml)
 [![NuGet package](https://img.shields.io/nuget/v/MoreFodyHelpers.svg?logo=NuGet)](https://www.nuget.org/packages/MoreFodyHelpers)
 [![.net](https://img.shields.io/badge/.net%20standard-2.0-ff69b4.svg?)](https://www.microsoft.com/net/download)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/huoshan12345/MoreFodyHelpers/blob/master/LICENSE)  
