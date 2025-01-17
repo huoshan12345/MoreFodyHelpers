@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FodyHelpers" Version="6.8.2" />
-    <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="All" />
+    <PackageReference Include="FodyHelpers" Version="6.9.1" />
+    <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
