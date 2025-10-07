@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/build/">
+    <File Path=".editorconfig" />
+    <File Path=".github/workflows/build.yml" />
+    <File Path="build/incre_ver.ps1" />
+    <File Path="build/pack.ps1" />
+    <File Path="build/pkg.version" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <Project Path="src/MoreFodyHelpers/MoreFodyHelpers.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <File Path="test/Directory.Build.props" />
+    <Project Path="test/MoreFodyHelpers.Tests/MoreFodyHelpers.Tests.csproj" />
+  </Folder>
+</Solution>
