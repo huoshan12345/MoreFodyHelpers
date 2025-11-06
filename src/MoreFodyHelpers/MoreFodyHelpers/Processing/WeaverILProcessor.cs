@@ -248,6 +248,18 @@ public class WeaverILProcessor
         }
     }
 
+    public Instruction Create(OpCode opCode, Func<ILProcessor, OpCode, Instruction> creator)
+    {
+        try
+        {
+            return creator(IL, opCode);
+        }
+        catch (ArgumentException)
+        {
+            throw ExceptionInvalidOperand(opCode);
+        }
+    }
+
     public Instruction Create(OpCode opCode, TypeReference typeRef)
     {
         try
@@ -335,6 +347,7 @@ public class WeaverILProcessor
             throw ExceptionInvalidOperand(opCode);
         }
     }
+
 
     public Instruction CreateConst(OpCode opCode, object operand)
     {

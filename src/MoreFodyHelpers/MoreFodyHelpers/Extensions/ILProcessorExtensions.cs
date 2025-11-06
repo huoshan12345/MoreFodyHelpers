@@ -12,4 +12,16 @@ public static class ILProcessorExtensions
         }
         return p;
     }
+
+    public static Instruction CreateLdarg(this ILProcessor il, int index)
+    {
+        return index switch
+        {
+            0 => il.Create(OpCodes.Ldarg_0),
+            1 => il.Create(OpCodes.Ldarg_1),
+            2 => il.Create(OpCodes.Ldarg_2),
+            3 => il.Create(OpCodes.Ldarg_3),
+            _ => il.Create(OpCodes.Ldarg, index),
+        };
+    }
 }

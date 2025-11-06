@@ -41,4 +41,11 @@ public static class TypeReferenceExtensions
             p = b;
         }
     }
+
+    public static TypeReference UnwrapByRef(this TypeReference typeRef)
+    {
+        return typeRef is ByReferenceType byRefType
+            ? byRefType.ElementType
+            : typeRef;
+    }
 }
