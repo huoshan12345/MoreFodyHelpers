@@ -33,10 +33,11 @@ public class ModuleDefinitionExtensionsTests
         }
 
         using (var module = ReadModule(_newDllFileFullName))
+        using (var context = new ModuleWeavingContext(module, null, null))
         {
             module.Name = _newDllFileName;
             module.Assembly.Name = new AssemblyNameDefinition(_newAssemblyName, module.Assembly.Name.Version);
-            module.AddIgnoresAccessCheck();
+            context.AddIgnoresAccessCheck();
             module.Write(_newDllFileFullName);
         }
 

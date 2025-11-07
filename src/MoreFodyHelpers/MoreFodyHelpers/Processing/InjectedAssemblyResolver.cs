@@ -2,16 +2,10 @@ using System.Runtime.CompilerServices;
 
 namespace MoreFodyHelpers.Processing;
 
-internal class InjectedAssemblyResolver
+internal class InjectedAssemblyResolver(ModuleWeavingContext context)
 {
-    private readonly ModuleWeavingContext _context;
     private readonly Dictionary<string, AssemblyDefinition?> _assemblyByPath = new(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
     private readonly ConditionalWeakTable<TypeReference, TypeDefinition> _typeDefinitions = new();
-
-    public InjectedAssemblyResolver(ModuleWeavingContext context)
-    {
-        _context = context;
-    }
 
     public void Dispose()
     {
@@ -23,7 +17,7 @@ internal class InjectedAssemblyResolver
 
     public AssemblyDefinition ResolveAssemblyByPath(string assemblyPath)
     {
-        if (!_assemblyByPath.TryGetValue(assemblyPath, out var assembly))
+        if (_assemblyByPath.TryGetValue(assemblyPath, out var assembly) == false)
         {
             try
             {
@@ -31,7 +25,7 @@ internal class InjectedAssemblyResolver
                     assemblyPath,
                     new ReaderParameters // Same as in Fody
                     {
-                        AssemblyResolver = _context.Module.AssemblyResolver,
+                        AssemblyResolver = context.Module.AssemblyResolver,
                         InMemory = true
                     }
                 );
