@@ -8,7 +8,7 @@ public class ModuleWeavingContext : IDisposable
     public string? ProjectDirectory { get; }
     public string? WeaverAssemblyName { get; }
 
-    internal Dictionary<TypeReference, bool> LibUsageTypeCache { get; } = new();
+    internal Dictionary<TypeReference, bool> LibUsageTypeCache { get; } = [];
     internal InjectedAssemblyResolver InjectedAssemblyResolver { get; }
 
     public ModuleWeavingContext(ModuleDefinition module, string? weaverAssemblyName, string? projectDirectory)
