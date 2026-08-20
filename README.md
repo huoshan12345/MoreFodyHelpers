@@ -18,9 +18,19 @@
   ```XML
   <PackageReference Include="MoreFodyHelpers" GeneratePathProperty="true" Version="..." />
   ```
+- Add this code snippet to the csproj file of the referencing project.
+```XML
+<PropertyGroup>
+  <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeReferences</TargetsForTfmSpecificContentInPackage>
+</PropertyGroup>
+<Target Name="IncludeReferences">
+  <ItemGroup>
+    <TfmSpecificPackageFile Include="$(OutputPath)\MoreFodyHelpers.dll" PackagePath="weaver" />
+  </ItemGroup>
+</Target>
+```
 
 ## Usage
-
 
 ## Examples
 
