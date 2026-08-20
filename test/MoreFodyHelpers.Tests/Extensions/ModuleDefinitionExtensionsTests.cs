@@ -56,8 +56,8 @@ public class ModuleDefinitionExtensionsTests
 
             var assemblyAttr = assembly.CustomAttributes.FirstOrDefault(m => m.AttributeType == attr);
             Assert.NotNull(assemblyAttr);
-            Assert.Single(assemblyAttr.ConstructorArguments);
-            Assert.Equal(_newAssemblyName, assemblyAttr.ConstructorArguments[0].Value);
+            var item = Assert.Single(assemblyAttr.ConstructorArguments);
+            Assert.Equal(_newAssemblyName, item.Value);
         }
     }
 

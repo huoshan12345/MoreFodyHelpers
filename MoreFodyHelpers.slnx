@@ -21,6 +21,7 @@
   </Folder>
   <Folder Name="/test/">
     <File Path="test/Directory.Build.props" />
+    <File Path="test/Directory.Build.targets" />
     <File Path="test/Directory.Packages.props" />
     <Project Path="test/MoreFodyHelpers.Tests/MoreFodyHelpers.Tests.csproj" />
   </Folder>
