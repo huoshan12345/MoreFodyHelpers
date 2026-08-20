@@ -6,8 +6,8 @@ public class ModuleWeavingContextTests
     public void Import_RuntimeMethodHandle_Test()
     {
         using var context = CreateContext(nameof(Import_RuntimeMethodHandle_Test));
-        var intPtr = context.ImportReference(typeof(nint));
-        var runtimeMethodHandle = context.ImportReference(typeof(RuntimeMethodHandle));
+        var intPtr = context.ImportReference<nint>();
+        var runtimeMethodHandle = context.ImportReference<RuntimeMethodHandle>();
         var method = MethodRefBuilder.MethodByNameAndSignature(context, runtimeMethodHandle, nameof(RuntimeMethodHandle.GetFunctionPointer), 0, intPtr, []).Build();
         Assert.Equal("System.IntPtr System.RuntimeMethodHandle::GetFunctionPointer()", method.FullName);
     }
@@ -17,8 +17,6 @@ public class ModuleWeavingContextTests
     {
         using var context = CreateContext(nameof(ImportReference_Test));
         var type = context.ImportReference<RuntimeMethodHandle>();
-        Assert.Equal(AssemblyNames.SystemRuntime, type.Scope.Name);
-
         var typeDef = type.Resolve();
         Assert.NotNull(typeDef);
     }

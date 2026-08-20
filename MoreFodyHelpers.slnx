@@ -5,7 +5,7 @@
     <File Path=".github/workflows/send-event.yml" />
   </Folder>
   <Folder Name="/build/">
-    <File Path="build/bump_version.ps1" />
+    <File Path="build/bump-version.ps1" />
     <File Path="build/pack.ps1" />
     <File Path="build/pkg.version" />
   </Folder>
@@ -16,10 +16,12 @@
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Packages.props" />
     <Project Path="src/MoreFodyHelpers/MoreFodyHelpers.csproj" />
   </Folder>
   <Folder Name="/test/">
     <File Path="test/Directory.Build.props" />
+    <File Path="test/Directory.Packages.props" />
     <Project Path="test/MoreFodyHelpers.Tests/MoreFodyHelpers.Tests.csproj" />
   </Folder>
 </Solution>
