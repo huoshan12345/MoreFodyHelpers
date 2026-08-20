@@ -13,12 +13,12 @@
 ---
 
 ## Installation
-- Include the [`MoreFodyHelpers`](https://www.nuget.org/packages/MoreFodyHelpers) NuGet package on its `<PackageReference />` items.
+- Include the [`MoreFodyHelpers`](https://www.nuget.org/packages/MoreFodyHelpers) NuGet package to the weaver project.
 
   ```XML
   <PackageReference Include="MoreFodyHelpers" GeneratePathProperty="true" Version="..." />
   ```
-- Add this code snippet to the csproj file of the referencing project.
+- Add this code snippet to the csproj file of the NuGet package, **NOT** the weaver project.
 ```XML
 <PropertyGroup>
   <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeReferences</TargetsForTfmSpecificContentInPackage>
