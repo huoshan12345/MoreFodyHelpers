@@ -11,18 +11,17 @@
   </Folder>
   <Folder Name="/config/">
     <File Path=".editorconfig" />
+    <File Path="Directory.Packages.props" />
     <File Path="NuGet.Config" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />
-    <File Path="src/Directory.Packages.props" />
     <Project Path="src/MoreFodyHelpers/MoreFodyHelpers.csproj" />
   </Folder>
   <Folder Name="/test/">
     <File Path="test/Directory.Build.props" />
     <File Path="test/Directory.Build.targets" />
-    <File Path="test/Directory.Packages.props" />
     <Project Path="test/MoreFodyHelpers.Tests/MoreFodyHelpers.Tests.csproj" />
   </Folder>
 </Solution>
